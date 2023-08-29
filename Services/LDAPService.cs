@@ -28,7 +28,7 @@ namespace DemoLDAPApi.Services
 
             foreach(SearchResult searchResult in results)
             {
-                var userName = searchResult.Properties["name"][0]?.ToString();
+                var userName = searchResult.GetPropertyValue("name");
 
                 if (userName is null) continue;
 
@@ -56,12 +56,36 @@ namespace DemoLDAPApi.Services
             DirectoryEntry directoryEntry = new(GetCurrentDomainPath());
             DirectorySearcher directorySearcher = _BuildUserSearcher(directoryEntry);
 
-            directorySearcher.Filter = "(&(objectCategory=User)(objectClass=person)(name=" + userName + "*))";
+            directorySearcher.Filter = "(&(objectCategory=User)(objectClass=person)(name=" + userName + "*))"; // asterisco deixa o filtro como se fosse o LIKE do SQL Server
 
             var results = directorySearcher.FindAll();
             var users = _BuildUsersList(results);
 
             return users.OrderBy(x => x.Name).ToList();
+        }
+
+        public dynamic? GetAUser(string userName)
+        {
+            DirectoryEntry directoryEntry = new(GetCurrentDomainPath());
+            DirectorySearcher directorySearcher = _BuildUserSearcher(directoryEntry);
+
+            directorySearcher.Filter = "(&(objectCategory=User)(objectClass=person)(name=" + userName + "))";
+
+            var searchResult = directorySearcher.FindOne();
+
+            if (searchResult is null) return new { Message = "Não encontrado" };
+
+            var user = new
+            {
+                Name = searchResult.GetPropertyValue("name"),
+                Mail = searchResult.GetPropertyValue("mail"),
+                Givenname = searchResult.GetPropertyValue("givenname"),
+                Surname = searchResult.GetPropertyValue("sn"),
+                UserPrincipalName = searchResult.GetPropertyValue("userPrincipalName"),
+                DistinguishedName = searchResult.GetPropertyValue("distinguishedName"),
+            };
+
+            return user;
         }
 
         private DirectorySearcher _BuildUserSearcher(DirectoryEntry directoryEntry)

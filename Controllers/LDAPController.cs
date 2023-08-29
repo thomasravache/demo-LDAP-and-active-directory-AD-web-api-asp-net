@@ -48,4 +48,12 @@ public class LDAPController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("GetAUser")]
+    public IActionResult GetAUser([FromQuery] string userName)
+    {
+        var result = _service.GetAUser(userName);
+
+        return Ok(result);
+    }
 }
