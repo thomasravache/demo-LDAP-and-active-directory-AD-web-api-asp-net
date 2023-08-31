@@ -1,8 +1,11 @@
+using System.Runtime.Versioning;
+using DemoLDAPApi.Models;
 using DemoLDAPApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DemoLDAPApi.Controllers;
 
+[SupportedOSPlatform("windows")]
 [ApiController]
 [Route("[controller]")]
 public class LDAPController : ControllerBase
@@ -55,5 +58,20 @@ public class LDAPController : ControllerBase
         var result = _service.GetAUser(userName);
 
         return Ok(result);
+    }
+
+    [HttpPost("AuthenticateUser")]
+    public IActionResult GetAUser([FromBody] LDAPAuthRequest userRequest)
+    {
+        try
+        {
+            var result = _service.AuthenticateUser(userRequest);
+
+            return Ok(result);
+        }
+        catch
+        {
+            return Unauthorized(new { Message = "Usuário e/ou senha inválidos" });
+        }
     }
 }

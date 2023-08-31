@@ -1,9 +1,11 @@
 using System.DirectoryServices;
-using System.Dynamic;
+using System.Runtime.Versioning;
 using DemoLDAPApi.Extensions;
+using DemoLDAPApi.Models;
 
 namespace DemoLDAPApi.Services
 {
+    [SupportedOSPlatform("windows")]
     public class LDAPService
     {
         public string GetCurrentDomainPath()
@@ -64,7 +66,7 @@ namespace DemoLDAPApi.Services
             return users.OrderBy(x => x.Name).ToList();
         }
 
-        public dynamic? GetAUser(string userName)
+        public dynamic GetAUser(string userName)
         {
             DirectoryEntry directoryEntry = new(GetCurrentDomainPath());
             DirectorySearcher directorySearcher = _BuildUserSearcher(directoryEntry);
@@ -86,6 +88,23 @@ namespace DemoLDAPApi.Services
             };
 
             return user;
+        }
+
+        public dynamic AuthenticateUser(LDAPAuthRequest lDAPAuthRequest)
+        {
+            try
+            {
+                DirectoryEntry directoryEntry = new($"LDAP://{lDAPAuthRequest.DomainName}", lDAPAuthRequest.UserName, lDAPAuthRequest.Password);
+                DirectorySearcher directorySearcher = new(directoryEntry);
+
+                SearchResult? result = directorySearcher.FindOne();
+
+                return new { Message = "Usuário Autenticado" };
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         private DirectorySearcher _BuildUserSearcher(DirectoryEntry directoryEntry)

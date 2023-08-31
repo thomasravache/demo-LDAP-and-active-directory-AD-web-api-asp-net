@@ -9,7 +9,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<LDAPService>();
+// if (OperatingSystem.IsWindows())
+// {
+    builder.Services.AddScoped<LDAPService>();
+// }
 
 var app = builder.Build();
 
